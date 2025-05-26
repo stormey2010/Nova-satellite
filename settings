@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+from src.settings.config import open_settings
+
+if __name__ == "__main__":
+    open_settings()

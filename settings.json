@@ -1,0 +1,12 @@
+{
+    "wakeword_settings": {
+        "model_path1": "Noh_vuh.onnx",
+        "model_path2": "noh_va.onnx",
+        "model_path3": "",
+        "chunk_size": 1280,
+        "inference_framework": "onnx",
+        "silence_threshold": 500,
+        "silence_duration_seconds": 1.0,
+        "no_speech_timeout_seconds": 4.0
+    }
+}

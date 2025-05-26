@@ -1,0 +1,5 @@
+OpenWakeWord
+requests
+pydub
+sounddevice
+numpy

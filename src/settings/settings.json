@@ -1,0 +1,12 @@
+{
+    "wakeword_settings": {
+        "chunk_size": 1280,
+        "model_path": "C:\\Users\\parke\\Downloads\\Noh_vuh.onnx",
+        "model_path2": "C:\\Users\\parke\\Downloads\\VS Code\\TTS\\suh_man_tuh.onnx",
+        "model_path3": "t",
+        "inference_framework": "onnx",
+        "silence_threshold": 500,
+        "silence_duration_seconds": 1.0,
+        "no_speech_timeout_seconds": 4.0
+    }
+}
