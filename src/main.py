@@ -67,6 +67,11 @@ parser.add_argument(
 
 args=parser.parse_args()
 
+# Ensure chunk_size has a valid integer value
+if args.chunk_size is None:
+    print("Warning: chunk_size not found in settings or command line. Using default value of 1280.")
+    args.chunk_size = 1280 # Default chunk size if not provided
+
 # Get microphone stream
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -87,7 +92,10 @@ if args.model_path3 and args.model_path3.strip() != "":
 if user_models:
     owwModel = Model(wakeword_models=user_models, inference_framework=args.inference_framework)
 else:
-    owwModel = Model(inference_framework=args.inference_framework)
+    # Pass empty lists for wakeword_models and wakeword_model_names
+    # to work around an issue in openwakeword where it might try to zip None values
+    # when default models are intended. This should allow it to proceed and load defaults.
+    owwModel = Model(wakeword_models=[], wakeword_model_names=[], inference_framework=args.inference_framework)
 
 n_models = len(owwModel.models.keys())
 
