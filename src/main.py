@@ -4,8 +4,14 @@ import numpy as np
 from openwakeword.model import Model
 import argparse
 from settings.config import load_settings # Import the function
+import os
+import io
+from pydub import AudioSegment
 
 current_settings = load_settings()
+# If load_settings returned nested dict with wakeword_settings, flatten it
+if isinstance(current_settings, dict) and "wakeword_settings" in current_settings:
+    current_settings = current_settings["wakeword_settings"]
 
 parser=argparse.ArgumentParser()
 parser.add_argument(
@@ -89,12 +95,22 @@ if args.model_path2 and args.model_path2.strip() != "":
 if args.model_path3 and args.model_path3.strip() != "":
     user_models.append(args.model_path3)
 
-if user_models:
-    owwModel = Model(wakeword_models=user_models, inference_framework=args.inference_framework)
+# Resolve full paths for custom models
+custom_dir = os.path.join(os.path.dirname(__file__), "wakeword", "custom")
+user_model_paths = []
+for m in user_models:
+    if os.path.isabs(m):
+        full_path = m
+    else:
+        full_path = os.path.join(custom_dir, m)
+    if not os.path.exists(full_path):
+        print(f"Warning: custom model file not found: {full_path}")
+    user_model_paths.append(full_path)
+
+# Initialize Model with custom paths
+if user_model_paths:
+    owwModel = Model(wakeword_models=user_model_paths, inference_framework=args.inference_framework)
 else:
-    # Pass empty lists for wakeword_models and wakeword_model_names
-    # to work around an issue in openwakeword where it might try to zip None values
-    # when default models are intended. This should allow it to proceed and load defaults.
     owwModel = Model(wakeword_models=[], wakeword_model_names=[], inference_framework=args.inference_framework)
 
 n_models = len(owwModel.models.keys())
@@ -138,6 +154,17 @@ if __name__ == "__main__":
                         else:
                             print("No audio recorded.")
                         
+                        # Save recording to speech.mp3
+                        if recorded_frames:
+                            raw_data = b''.join([f.tobytes() for f in recorded_frames])
+                            audio_segment = AudioSegment.from_raw(io.BytesIO(raw_data), sample_width=2, frame_rate=RATE, channels=1)
+                            # Ensure sounds directory exists
+                            sounds_dir = os.path.join(os.path.dirname(__file__), "sounds")
+                            os.makedirs(sounds_dir, exist_ok=True)
+                            save_path = os.path.join(sounds_dir, "speech.mp3")
+                            audio_segment.export(save_path, format="mp3")
+                            print(f"Saved recording to {save_path}")
+                        
                         is_recording = False
                         recorded_frames = []
                         consecutive_silent_chunks = 0
@@ -151,6 +178,17 @@ if __name__ == "__main__":
                         print(f"\nSilence detected for {args.silence_duration_seconds}s after speech, stopping recording.")
                         total_duration_seconds = len(recorded_frames) * CHUNK / RATE
                         print(f"Recorded {total_duration_seconds:.2f} seconds of audio.")
+                        
+                        # Save recording to speech.mp3
+                        if recorded_frames:
+                            raw_data = b''.join([f.tobytes() for f in recorded_frames])
+                            audio_segment = AudioSegment.from_raw(io.BytesIO(raw_data), sample_width=2, frame_rate=RATE, channels=1)
+                            # Ensure sounds directory exists
+                            sounds_dir = os.path.join(os.path.dirname(__file__), "sounds")
+                            os.makedirs(sounds_dir, exist_ok=True)
+                            save_path = os.path.join(sounds_dir, "speech.mp3")
+                            audio_segment.export(save_path, format="mp3")
+                            print(f"Saved recording to {save_path}")
                         
                         is_recording = False
                         recorded_frames = []
